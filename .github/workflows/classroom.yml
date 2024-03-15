@@ -1,0 +1,61 @@
+name: Autograding Tests
+'on':
+- push
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: abs
+      id: abs
+      uses: education/autograding-command-grader@v1
+      with:
+        test-name: abs
+        setup-command: sudo -H pip3 install -r requirements.txt
+        command: pytest -k abs
+        timeout: 10
+        max-score: 0
+    - name: max
+      id: max
+      uses: education/autograding-command-grader@v1
+      with:
+        test-name: max
+        setup-command: ''
+        command: pytest -k max
+        timeout: 10
+        max-score: 1
+    - name: mult
+      id: mult
+      uses: education/autograding-command-grader@v1
+      with:
+        test-name: mult
+        setup-command: ''
+        command: pytest -k mult
+        timeout: 10
+        max-score: 1
+    - name: div
+      id: div
+      uses: education/autograding-command-grader@v1
+      with:
+        test-name: div
+        setup-command: ''
+        command: pytest -k div
+        timeout: 10
+        max-score: 2
+    - name: Autograding Reporter
+      uses: education/autograding-grading-reporter@v1
+      env:
+        ABS_RESULTS: "${{steps.abs.outputs.result}}"
+        MAX_RESULTS: "${{steps.max.outputs.result}}"
+        MULT_RESULTS: "${{steps.mult.outputs.result}}"
+        DIV_RESULTS: "${{steps.div.outputs.result}}"
+      with:
+        runners: abs,max,mult,div
